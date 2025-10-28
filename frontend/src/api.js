@@ -1,34 +1,37 @@
-const BASE_URL = "http://localhost:5000/api";
+const API_BASE = "http://localhost:5000/api";
+
 
 export async function fetchProducts() {
-  const res = await fetch(`${BASE_URL}/products`);
+  const res = await fetch(`${API_BASE}/products`);
   return res.json();
 }
 
 export async function fetchCart() {
-  const res = await fetch(`${BASE_URL}/cart`);
+  const res = await fetch(`${API_BASE}/cart`);
   return res.json();
 }
 
-export async function addToCart(product, qty = 1) {
-  const res = await fetch(`${BASE_URL}/cart`, {
+
+export async function addToCart(product) {
+  await fetch(`${API_BASE}/cart`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ productId: product._id, qty }),
+    body: JSON.stringify(product),
   });
-  return res.json();
 }
+
 
 export async function removeFromCart(id) {
-  const res = await fetch(`${BASE_URL}/cart/${id}`, { method: "DELETE" });
-  return res.json();
+  await fetch(`${API_BASE}/cart/${id}`, { method: "DELETE" });
 }
 
-export async function checkout(cartItems, customer) {
-  const res = await fetch(`${BASE_URL}/checkout`, {
+
+export async function checkout(items, customer) {
+  const res = await fetch(`${API_BASE}/checkout`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(customer),
+    body: JSON.stringify({ items, customer }),
   });
+  if (!res.ok) throw new Error("Checkout failed");
   return res.json();
 }

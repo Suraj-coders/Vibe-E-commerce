@@ -6,9 +6,9 @@ import {
   removeFromCart,
   checkout,
 } from "./api";
-import ProductsGrid from "./components/ProductsGrid";
-import CartView from "./components/CartView";
-import CheckoutModal from "./components/CheckoutModal";
+import ProductsGrid from "./components/ProductsGrid.jsx";
+import CartView from "./components/CartView.jsx";
+import CheckoutModal from "./components/CheckoutModal.jsx";
 
 export default function App() {
   const [products, setProducts] = useState([]);
@@ -23,15 +23,22 @@ export default function App() {
 
   async function loadAll() {
     setLoading(true);
-    const products = await fetchProducts();
-    const cart = await fetchCart();
-    setProducts(products);
-    setCart(cart);
-    setLoading(false);
+    try {
+      const [productsData, cartData] = await Promise.all([
+        fetchProducts(),
+        fetchCart(),
+      ]);
+      setProducts(productsData);
+      setCart(cartData);
+    } catch (err) {
+      console.error("Error loading data:", err);
+    } finally {
+      setLoading(false);
+    }
   }
 
-  const handleAdd = async (p) => {
-    await addToCart(p);
+  const handleAdd = async (product) => {
+    await addToCart(product);
     setCart(await fetchCart());
   };
 
@@ -41,16 +48,21 @@ export default function App() {
   };
 
   const handleCheckout = async (customer) => {
-    const res = await checkout(cart.items, customer);
-    setReceipt(res.receipt);
-    setIsCheckoutOpen(false);
-    setCart(await fetchCart());
+    try {
+      const res = await checkout(cart.items, customer);
+      setReceipt(res.receipt); // show receipt
+      setIsCheckoutOpen(false);
+      setCart(await fetchCart()); // clear cart
+    } catch (err) {
+      console.error("Checkout failed:", err);
+      alert("Checkout failed. Please try again.");
+    }
   };
 
   return (
-    <div className="min-h-screen flex flex-col">
-      {/* Navbar */}
-      <header className="bg-white shadow p-4 flex justify-between items-center sticky top-0 left-0 right-0 z-50">
+    <div className="min-h-screen flex flex-col bg-gray-50">
+   
+      <header className="bg-white shadow p-4 px-6 lg:px-20 flex justify-between items-center sticky top-0 left-0 right-0 z-50">
         <h1 className="text-2xl font-bold text-emerald-600">Vibe Shop</h1>
         <div className="flex gap-4 items-center">
           <div className="text-gray-700">
@@ -67,7 +79,7 @@ export default function App() {
         </div>
       </header>
 
-      {/* Main Content */}
+    
       <main className="flex flex-col lg:flex-row p-6 gap-6 max-w-6xl mx-auto w-full flex-1">
         <section className="flex-1">
           <h2 className="text-xl font-semibold mb-4">Products</h2>
@@ -83,7 +95,7 @@ export default function App() {
         </aside>
       </main>
 
-      {/* Checkout Modal */}
+     
       <CheckoutModal
         isOpen={isCheckoutOpen}
         onClose={() => setIsCheckoutOpen(false)}
@@ -91,19 +103,39 @@ export default function App() {
         onCheckoutSuccess={handleCheckout}
       />
 
-      {/* Receipt */}
+     
       {receipt && (
-        <div className="fixed bottom-5 right-5 bg-gray-900 text-white p-4 rounded-lg shadow-lg">
-          <h3 className="font-semibold">Receipt</h3>
-          <p>ID: {receipt.id}</p>
-          <p>Total: ${receipt.total}</p>
-          <p>Time: {new Date(receipt.timestamp).toLocaleString()}</p>
-          <button
-            onClick={() => setReceipt(null)}
-            className="mt-2 text-sm underline"
-          >
-            Close
-          </button>
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50">
+          <div className="bg-white p-6 rounded-lg shadow-lg w-96 animate-fadeIn text-center">
+            <h3 className="text-xl font-bold text-emerald-600 mb-2">
+              Checkout Successful!
+            </h3>
+            <p className="text-sm text-gray-600 mb-4">
+              Thank you for your order, {receipt.customer?.name}!
+            </p>
+
+            <div className="text-left border-t pt-2 mb-3">
+              <p>
+                <strong>Order ID:</strong> {receipt.id}
+              </p>
+              <p>
+                <strong>Email:</strong> {receipt.customer?.email}
+              </p>
+              <p>
+                <strong>Total:</strong> ${receipt.total?.toFixed(2)}
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                {new Date(receipt.timestamp).toLocaleString()}
+              </p>
+            </div>
+
+            <button
+              onClick={() => setReceipt(null)}
+              className="mt-3 px-4 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-md"
+            >
+              Close
+            </button>
+          </div>
         </div>
       )}
     </div>

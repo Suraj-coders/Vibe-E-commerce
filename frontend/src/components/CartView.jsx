@@ -1,23 +1,25 @@
-export default function CartView({ cart, onRemove }) {
-  const items = cart.items || [];
 
+
+export default function CartView({ cart, onRemove }) {
   return (
-    <div className="bg-white rounded-lg shadow p-4">
-      <h2 className="text-lg font-semibold mb-3">Your Cart</h2>
-      {items.length === 0 ? (
-        <p className="text-gray-500 text-sm">Cart is empty</p>
+    <div className="bg-white shadow rounded-lg p-4">
+      <h2 className="text-lg font-semibold mb-4">Your Cart</h2>
+
+      {!cart.items.length ? (
+        <p className="text-gray-500">Your cart is empty</p>
       ) : (
-        <ul className="divide-y">
-          {items.map((it) => (
-            <li key={it._id} className="flex justify-between py-2 items-center">
+        <ul className="space-y-3">
+          {cart.items.map((item) => (
+            <li
+              key={item._id}
+              className="flex justify-between items-center border-b pb-2"
+            >
               <div>
-                <div className="font-medium">{it.product.name}</div>
-                <div className="text-sm text-gray-500">
-                  ${it.product.price} × {it.qty}
-                </div>
+                <p className="font-semibold">{item.title}</p>
+                <p className="text-sm text-gray-600">${item.price}</p>
               </div>
               <button
-                onClick={() => onRemove(it._id)}
+                onClick={() => onRemove(item._id)}
                 className="text-red-500 hover:underline text-sm"
               >
                 Remove
@@ -26,8 +28,9 @@ export default function CartView({ cart, onRemove }) {
           ))}
         </ul>
       )}
-      <div className="text-right mt-3 font-semibold text-emerald-600">
-        Total: ${cart.total?.toFixed(2)}
+
+      <div className="mt-4 text-right font-bold text-emerald-700">
+        Total: ${cart.total?.toFixed(2) || 0}
       </div>
     </div>
   );

@@ -1,45 +1,41 @@
-import CartItem from "../models/CartItem.js";
 import Order from "../models/Order.js";
-import { validationResult } from "express-validator";
 
-export const checkout = async (req, res, next) => {
+export const checkout = async (req, res) => {
   try {
-    const errors = validationResult(req);
-    if (!errors.isEmpty())
-      return res.status(400).json({ errors: errors.array() });
+    const { items, customer } = req.body;
 
-    const { name, email } = req.body;
-    const cartItems = await CartItem.find().populate("product");
+    if (!items?.length || !customer?.name || !customer?.email) {
+      return res.status(400).json({ error: "Invalid checkout data" });
+    }
 
-    if (!cartItems.length)
-      return res.status(400).json({ message: "Cart is empty" });
-
-    const total = cartItems.reduce(
-      (sum, item) => sum + item.product.price * item.qty,
+    const total = items.reduce(
+      (sum, i) => sum + (i.price || i.product?.price || 0),
       0
     );
 
-    const order = await Order.create({
-      name,
-      email,
-      items: cartItems.map((i) => ({
-        product: i.product.toObject(),
-        qty: i.qty,
+  
+    const order = new Order({
+      name: customer.name,
+      email: customer.email,
+      items: items.map((i) => ({
+        product: i.product || i,
       })),
       total,
     });
 
-    await CartItem.deleteMany();
+    await order.save();
 
     res.json({
       message: "Checkout successful",
       receipt: {
         id: order._id,
         total,
+        customer,
         timestamp: order.createdAt,
       },
     });
   } catch (err) {
-    next(err);
+    console.error("Checkout Error:", err);
+    res.status(500).json({ error: "Failed to checkout" });
   }
 };
