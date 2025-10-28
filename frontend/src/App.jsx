@@ -62,7 +62,7 @@ export default function App() {
   return (
     <div className="min-h-screen flex flex-col bg-gray-50">
    
-      <header className="bg-white shadow p-4 px-6 lg:px-20 flex justify-between items-center sticky top-0 left-0 right-0 z-50">
+      <header className="bg-white shadow p-3 px-6 lg:px-20 flex justify-between items-center sticky top-0 left-0 right-0 z-50">
         <h1 className="text-2xl font-bold text-emerald-600">Vibe Shop</h1>
         <div className="flex gap-4 items-center">
           <div className="text-gray-700">

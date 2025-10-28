@@ -85,4 +85,5 @@ React pages (Home, Cart, Checkout)
 
 Components (Header, ProductCard, etc.)
 
-API requests using Axios
+API requests using fetch
+
