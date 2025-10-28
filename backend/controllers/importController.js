@@ -8,7 +8,7 @@ export const importProducts = async (req, res) => {
       "https://api.escuelajs.co/api/v1/products?offset=0&limit=10"
     );
 
-    // Clean and format the data
+   
     const formatted = data.map((item) => ({
       title: item.title,
       price: item.price,
@@ -19,10 +19,10 @@ export const importProducts = async (req, res) => {
           : ["https://via.placeholder.com/400x400?text=No+Image"],
     }));
 
-    // Clear existing data
+   
     await Product.deleteMany({});
 
-    // Insert new products
+    
     const inserted = await Product.insertMany(formatted);
 
     res.status(201).json({
